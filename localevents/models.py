@@ -54,3 +54,20 @@ class Event(models.Model):
         ordering = ['-created_on']
         verbose_name = 'event'
         verbose_name_plural = 'events'
+
+
+class EventSignup(models.Model):
+    event = models.ForeignKey(
+        Event,
+        on_delete=models.CASCADE,
+    )
+    user_registrant = models.ForeignKey(
+        Profile,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
+    new_registrant = models.CharField(max_length=255, blank=True)
+
+    def __str__(self):
+        return self.event.title
