@@ -1,6 +1,8 @@
 from django.db import models
 from django.urls import reverse
 
+from accounts.models import Profile
+
 
 class EventType(models.Model):
     name = models.CharField(max_length=255)
@@ -16,6 +18,13 @@ class EventType(models.Model):
 
 
 class Event(models.Model):
+    STATUS_CHOICES = {
+        "Available": "Available",
+        "Full": "Full",
+        "Done": "Done",
+        "Cancelled": "Cancelled",
+    }
+
     title = models.CharField(max_length=255)
     category = models.ForeignKey(
         EventType,
@@ -24,10 +33,14 @@ class Event(models.Model):
         null=True,
         blank=True,
     )
+    organizer = models.ManyToManyField(Profile, blank=True)
+    event_image = models.ImageField(upload_to='events/', blank=True, null=True)
     description = models.TextField()
     location = models.CharField()
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
+    event_capacity = models.PositiveIntegerField()
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES)
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
 
