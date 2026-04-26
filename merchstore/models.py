@@ -4,9 +4,12 @@ from django.db import models
 from django.urls import reverse
 
 
-# temporary 
+# Temporary model
 class Profile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+    )
     name = models.CharField(max_length=50)
     email = models.EmailField()
 
@@ -41,7 +44,14 @@ class Product(models.Model):
         related_name='products',
         null=True,
     )
+    owner = models.ForeignKey(
+        Profile,
+        on_delete=models.SET_NULL,
+        related_name='products',
+        null=True,
+    )
     description = models.TextField()
+    image = models.ImageField(blank=True)
     price = models.DecimalField(
         max_digits=8,
         decimal_places=2,
@@ -85,13 +95,13 @@ class Transaction(models.Model):
     buyer = models.ForeignKey(
         Profile,
         on_delete=models.SET_NULL,
-        related_name='profiles',
+        related_name='transactions',
         null=True,
     )
     product = models.ForeignKey(
         Product,
         on_delete=models.CASCADE,
-        related_name='products',
+        related_name='transactions',
         null=True,
     )
     amount = models.IntegerField(validators=[MinValueValidator(1)])
