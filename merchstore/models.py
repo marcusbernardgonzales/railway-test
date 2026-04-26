@@ -1,6 +1,14 @@
+from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.urls import reverse
+
+
+# temporary 
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    name = models.CharField(max_length=50)
+    email = models.EmailField()
 
 
 class ProductType(models.Model):
@@ -17,6 +25,15 @@ class ProductType(models.Model):
 
 
 class Product(models.Model):
+    AVAILABLE = "A"
+    ON_SALE = "OS"
+    OUT_OF_STOCK = "OOS"
+    PRODUCT_STATUS_CHOICES = {
+        AVAILABLE: "Available",
+        ON_SALE: "On Sale",
+        OUT_OF_STOCK: "Out of Stock",
+    }
+    
     name = models.CharField(max_length=255)
     type = models.ForeignKey(
         ProductType,
@@ -31,13 +48,12 @@ class Product(models.Model):
     )
     stock = models.IntegerField(
         validators=[MinValueValidator(0)],
+        default=1,
     )
     status = models.CharField(
-        choices=[
-            ("A", "Available"),
-            ("OS", "On Sale"),
-            ("OOS" "Out of Stock"),
-        ]
+        max_length=3,
+        choices=PRODUCT_STATUS_CHOICES,
+        default=AVAILABLE,
     )
 
     def __str__(self):
@@ -53,10 +69,24 @@ class Product(models.Model):
 
 
 class Transaction(models.Model):
+    ON_CART = "OC"
+    TO_PAY = "TP"
+    TO_SHIP = "TS"
+    TO_RECEIVE = "TR"
+    DELIVERED = "D"
+    TRANSACTION_STATUS_CHOICES = {
+        ON_CART: "On Cart",
+        TO_PAY: "To Pay",
+        TO_SHIP: "To Ship",
+        TO_RECEIVE: "To Receive",
+        DELIVERED: "Delivered",
+    }
+
     buyer = models.ForeignKey(
         Profile,
         on_delete=models.SET_NULL,
         related_name='profiles',
+        null=True,
     )
     product = models.ForeignKey(
         Product,
@@ -64,17 +94,11 @@ class Transaction(models.Model):
         related_name='products',
         null=True,
     )
-    amount = models.IntegerField(
-        validators=[MinValueValidator(1)]
-    )
+    amount = models.IntegerField(validators=[MinValueValidator(1)])
     status = models.CharField(
-        choices=[
-            ("OC", "On Cart"),
-            ("TP", "To Pay"),
-            ("TS", "To Ship"),
-            ("TR", "To Receive"),
-            ("D", "Delivered"),
-        ]
+        max_length=2,
+        choices=TRANSACTION_STATUS_CHOICES,
+        default=ON_CART,
     )
     created_on = models.DateTimeField(auto_now_add=True)
 

@@ -10,6 +10,11 @@ class ItemListView(ListView):
     template_name = 'merchstore/item_list.html'
     context_object_name = 'products'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['items'] = Product.objects.all()
+        return context
+
 
 class ItemDetailView(DetailView):
     model = Product
