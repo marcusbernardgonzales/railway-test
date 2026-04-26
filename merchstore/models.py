@@ -25,7 +25,20 @@ class Product(models.Model):
         null=True,
     )
     description = models.TextField()
-    price = models.DecimalField(max_digits=8, decimal_places=2)
+    price = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+    )
+    stock = models.IntegerField(
+        validators=[MinValueValidator(0)],
+    )
+    status = models.CharField(
+        choices=[
+            ("A", "Available"),
+            ("OS", "On Sale"),
+            ("OOS" "Out of Stock"),
+        ]
+    )
 
     def __str__(self):
         return self.name
@@ -66,6 +79,5 @@ class Transaction(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ['buyer']
         verbose_name = 'transaction'
         verbose_name_plural = 'transactions'
