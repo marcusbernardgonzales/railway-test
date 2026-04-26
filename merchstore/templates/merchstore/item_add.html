@@ -1,0 +1,14 @@
+{% extends 'merchstore/base_item.html' %}
+
+{% block title %}Merch Store | {{ product.name }}{% endblock %}
+
+{% block content %}
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Add item">
+    </form>
+    <br>
+    <br>
+    <a href="{% url 'merchstore:item_list' %}">Return to item list</a>
+{% endblock %}
