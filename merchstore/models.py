@@ -1,3 +1,4 @@
+from django.core.validators import MinValueValidator
 from django.db import models
 from django.urls import reverse
 
@@ -36,3 +37,35 @@ class Product(models.Model):
         ordering = ['name']
         verbose_name = 'product'
         verbose_name_plural = 'products'
+
+
+class Transaction(models.Model):
+    buyer = models.ForeignKey(
+        Profile,
+        on_delete=models.SET_NULL,
+        related_name='profiles',
+    )
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name='products',
+        null=True,
+    )
+    amount = models.IntegerField(
+        validators=[MinValueValidator(1)]
+    )
+    status = models.CharField(
+        choices=[
+            ("OC", "On Cart"),
+            ("TP", "To Pay"),
+            ("TS", "To Ship"),
+            ("TR", "To Receive"),
+            ("D", "Delivered"),
+        ]
+    )
+    created_on = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['buyer']
+        verbose_name = 'transaction'
+        verbose_name_plural = 'transactions'
