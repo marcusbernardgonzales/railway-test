@@ -3,6 +3,7 @@ from django.views.generic.edit import UpdateView
 
 from .models import Profile
 
+
 class ProfileUpdateView(LoginRequiredMixin, UpdateView):
     model = Profile
     fields = ['display_name']
@@ -13,4 +14,3 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
 
     def get_success_url(self):
         return '/'
-
