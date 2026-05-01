@@ -6,14 +6,70 @@
     <h3>{{ book.title }} ({{ book.publication_year }})</h3>
     <h4>By {{ book.author }}</h4>
     <h4>{{ book.genre }}</h4>
+    <p>{{ book.synopsis }}</p>
     <br>
     <p>
         Created {{ book.created_on|date:'M d, Y' }},
         updated {{ book.updated_on|date:'M d, Y' }}
     </p>
     <br>
+    <p>
+        <strong>Status:</strong>
+        {% if available %}
+            Available to borrow
+        {% else %}
+            Not Available
+        {% endif %}
+    </p>
     <br>
+    <form method="POST">
+        {% csrf_token %}
+        <button type="submit" name="toggle_bookmark">
+            {% if is_bookmarked %}
+                Remove from Bookmarks
+            {% else %}
+                Bookmark
+            {% endif %}
+        </button>
+    </form>
+    <p>Bookmarks: {{ bookmark_count }}</p>
     <br>
+    {% if available %}
+        <a href="{% url 'bookclub:book_borrow' book.pk %}">Borrow Book</a>
+    {% else %}
+        <p>This book is currently unavailable.</p>
+    {% endif %}
+    <br><br>
+    {% if can_edit %}
+        <a href="{% url 'bookclub:edit_book' book.pk %}">Edit Book</a>
+        <br><br>
+    {% endif %}
+    
+    <h4>Reviews</h4>
+
+    <ul>
+        {% for review in reviews %}
+            <li>
+                <strong>{{ review.title }}</strong><br>
+                By: {{ review.reviewer_name }}<br>
+                {{ review.content }}
+            </li>
+        {% empty %}
+            <li>No reviews yet.</li>
+        {% endfor %}
+    </ul>
+
+    <br>
+
+    <h4>Leave a Review</h4>
+    <form method="POST">
+        {% csrf_token %}
+        {{ review_form.as_p }}
+        <button type="submit" name="submit_review">Submit Review</button>
+    </form>
+
+    <br>
+
     <a href="{% url 'bookclub:book_list' %}">
         Return to book list
     </a>
