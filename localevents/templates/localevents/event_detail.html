@@ -6,10 +6,30 @@
     <h3>{{ event.title }}</h3>
     <h4>{{ event.category }}</h4>
     <h4>{{ event.location }}</h4>
-    <br>
     <p>From {{ event.start_time }} to {{ event.end_time }}</p>
-    <br>
-    <br>
-    <br>
+    <p>Capacity: {{ signup_count }}/{{ event.capacity }}</p>
+
+    <hr>
+    {% if is_owner %}
+        <a href="{% url 'localevents:event_edit' event.id %}">Edit Event</a>
+    {% endif %}
+
+    <form method="post" action="{% url 'localevents:event_signup' event.id %}">
+        {% csrf_token %}
+        {% if is_full or is_owner %}
+            <button type="submit" disabled>Sign Up</button>
+        {% else %}
+            <button type="submit">Sign Up</button>
+        {% endif %}
+    </form>
+
+    {% if is_full %}
+        <p>Event is full.</p>
+    {% endif %}
+
+    {% if is_owner %}
+        <p>You cannot sign up for your own event.</p>
+    {% endif %}
+
     <a href="{% url 'localevents:event_list' %}">Return to event list</a>
 {% endblock %}
