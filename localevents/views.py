@@ -1,7 +1,10 @@
-from django.views.generic import ListView
+from django.views import View
+from django.views.generic import ListView, FormView
 from django.views.generic.detail import DetailView
+from django.shortcuts import get_object_or_404, redirect
 
-from .models import Event
+from .models import Event, EventSignup
+from .forms import GuestSignupForm
 
 
 class EventListView(ListView):
@@ -33,15 +36,14 @@ class EventListView(ListView):
 
 class EventDetailView(DetailView):
     model = Event
-    template_name = 'localevents/event_detail.html'
-    context_object_name = 'event'
+    
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         event = self.object
 
         signup_count = event.signups.count()
-        is_full = signup_count >= event.capacity
+        is_full = signup_count >= event.event_capacity
 
         is_owner = False
         if self.request.user.is_authenticated:
@@ -54,3 +56,42 @@ class EventDetailView(DetailView):
         context['can_signup'] = not is_full and not is_owner
 
         return context
+
+class EventSignupView(View):
+    def post(self, request, pk):
+        event = get_object_or_404(Event, pk=pk)
+
+        if event.signups.count() >= event.event_capacity:
+            return redirect(event.get_absolute_url())
+        
+        if self.request.user.is_authenticated:
+            profile = self.request.user.profile
+
+            if not event.organizer.filter(id=profile.id).exists():
+                EventSignup.objects.create(
+                    event=event,
+                    user_registrant=profile,
+                )
+            
+            return redirect(event.get_absolute_url())
+
+        return redirect('localevents:guest_signup_form', pk=event.pk)
+    
+class GuestSignupFormView(FormView):
+    template_name = 'localevents/signup_form.html'
+    form_class = GuestSignupForm
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        event = get_object_or_404(Event, pk=self.kwargs['pk'])
+        context['event'] = event
+        return context
+    
+    def form_valid(self, form):
+        event = get_object_or_404(Event, pk=self.kwargs['pk'])
+
+        signup = form.save(commit=False)
+        signup.event = event
+        signup.save()
+
+        return redirect(event.get_absolute_url())
