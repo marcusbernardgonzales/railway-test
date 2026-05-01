@@ -35,3 +35,22 @@ class EventDetailView(DetailView):
     model = Event
     template_name = 'localevents/event_detail.html'
     context_object_name = 'event'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        event = self.object
+
+        signup_count = event.signups.count()
+        is_full = signup_count >= event.capacity
+
+        is_owner = False
+        if self.request.user.is_authenticated:
+            profile = self.request.user.profile
+            is_owner = event.organizer.filter(id=profile.id).exists()
+
+        context['signup_count'] = signup_count
+        context['is_full'] = is_full
+        context['is_owner'] = is_owner
+        context['can_signup'] = not is_full and not is_owner
+
+        return context

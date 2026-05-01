@@ -60,6 +60,7 @@ class EventSignup(models.Model):
     event = models.ForeignKey(
         Event,
         on_delete=models.CASCADE,
+        related_name='signups'
     )
     user_registrant = models.ForeignKey(
         Profile,
