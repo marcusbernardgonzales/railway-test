@@ -6,9 +6,18 @@
     <h3>{{ product.name }}</h3>
     <h4>{{ product.type }}</h4>
     <h4>₱{{ product.price }}</h4>
+    <b>{{ product.stock }} Left | {{ product.get_status_display }}</b>
+    <br>
     <br>
     <p>{{ product.description }}</p>
     <br>
+    {% if product.owner != user %}
+        <form method="POST">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <input type="submit" value="Purchase item">
+        </form>
+    {% endif %}
     <br>
     <br>
     <a href="{% url 'merchstore:item_list' %}">Return to item list</a>

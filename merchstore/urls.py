@@ -13,8 +13,8 @@ urlpatterns = [
          name='item_create'),
     path('merchstore/cart', CartView.as_view(),
          name='cart'),
-    path('merchstore/transactions', TransactionDetailView.as_view(),
-         name='transaction_detail'),
+    path('merchstore/transactions', TransactionListView.as_view(),
+         name='transaction_list'),
 ]
 
 app_name = "merchstore"

@@ -1,9 +1,11 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render
 from django.views.generic import ListView
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import CreateView, UpdateView
 
-from .models import Product
+from .models import *
+from .forms import *
 
 
 class ItemListView(ListView):
@@ -17,30 +19,32 @@ class ItemListView(ListView):
         return context
 
 
-class ItemDetailView(DetailView):
+class ItemDetailView(DetailView, CreateView):
     model = Product
+    form_class = TransactionForm
     template_name = 'merchstore/item_detail.html'
     context_object_name = 'product'
 
 
-class ItemCreateView(CreateView):
+class ItemCreateView(CreateView, LoginRequiredMixin):
     model = Product
+    form_class = ItemForm
     template_name = 'merchstore/item_add.html'
-    context_object_name = 'product'
 
 
-class ItemUpdateView(UpdateView):
+class ItemUpdateView(UpdateView, LoginRequiredMixin):
     model = Product
+    form_class = ItemForm
     template_name = 'merchstore/item_update.html'
-    context_object_name = 'product'
 
-class CartView(ListView):
-    model = Transactions
+
+class CartView(ListView, LoginRequiredMixin):
+    model = Transaction
     template_name = 'merchstore/cart.html'
     context_object_name = 'transaction'
 
 
-class TransactionListView(ListView):
-    model = TransactionListView
+class TransactionListView(ListView, LoginRequiredMixin):
+    model = Transaction
     template_name = 'merchstore/transaction_list.html'
-    conext_object_name = 'transaction'
+    context_object_name = 'transaction'

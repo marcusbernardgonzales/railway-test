@@ -14,3 +14,11 @@ class ItemForm(forms.ModelForm):
             'price',
             'stock',
         ]
+
+
+class TransactionForm(forms.ModelForm):
+    class Meta:
+        model = Transaction
+        fields = [
+            'amount',
+        ]

@@ -1,0 +1,17 @@
+{% extends 'merchstore/base_item.html' %}
+
+{% block title %}Merch Store | Your Cart{% endblock %}
+
+{% block content %}
+    <h3>Your Cart</h3>
+    {% for transaction in transactions %}
+        {% if transaction.buyer == user %}
+            <li>
+                {{ transaction.product.name }}
+            </li>
+        {% endif %}
+    {% endfor %}
+    <br>
+    <br>
+    <a href="{% url 'merchstore:item_list' %}">Return to item list</a>
+{% endblock %}
