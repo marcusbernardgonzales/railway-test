@@ -4,8 +4,8 @@ from django.views.generic import ListView
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import CreateView, UpdateView
 
-from .models import *
 from .forms import *
+from .models import *
 
 
 class ItemListView(ListView):
@@ -41,10 +41,10 @@ class ItemUpdateView(UpdateView, LoginRequiredMixin):
 class CartView(ListView, LoginRequiredMixin):
     model = Transaction
     template_name = 'merchstore/cart.html'
-    context_object_name = 'transaction'
+    context_object_name = 'transactions'
 
 
 class TransactionListView(ListView, LoginRequiredMixin):
     model = Transaction
     template_name = 'merchstore/transaction_list.html'
-    context_object_name = 'transaction'
+    context_object_name = 'transactions'

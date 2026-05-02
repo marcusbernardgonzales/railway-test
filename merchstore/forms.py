@@ -9,16 +9,15 @@ class ItemForm(forms.ModelForm):
         fields = [
             'name',
             'type',
-            'image',
             'description',
+            'image',
             'price',
             'stock',
+            'status',
         ]
 
 
 class TransactionForm(forms.ModelForm):
     class Meta:
         model = Transaction
-        fields = [
-            'amount',
-        ]
+        fields = ['amount',]
