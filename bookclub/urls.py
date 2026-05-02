@@ -11,7 +11,7 @@ urlpatterns = [
          name='book_add'),
     path('bookclub/book/<int:pk>/edit', BookUpdateView.as_view(),
          name='book_edit'),
-    path('bookclub/book/<int:pk>/borrow', borrow_book, name='book_borrow'),
+    path('bookclub/book/<int:pk>/borrow', BookBorrowView.as_view(), name='book_borrow'),
 ]
 
 app_name = 'bookclub'

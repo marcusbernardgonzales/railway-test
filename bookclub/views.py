@@ -136,23 +136,46 @@ class BookUpdateView(LoginRequiredMixin, UpdateView):
         return super().form_valid(form)
 
 
-def borrow_book(request, pk):
-    book = get_object_or_404(Book, pk=pk)
+class BookBorrowView(View):
 
-    if not book.available_to_borrow:
-        return redirect(book.get_absolute_url())
 
-    if request.method == 'POST':
+    def get(self, request, pk):
+        book = get_object_or_404(Book, pk=pk)
+
+        if not book.available_to_borrow:
+            return redirect(book.get_absolute_url())
+
+        if request.user.is_authenticated and hasattr(request.user, "profile"):
+            form = BorrowForm(initial={
+                "name": request.user.profile.display_name
+            })
+            form.fields["name"].disabled = True
+        else:
+            form = BorrowForm()
+
+        return render(request, "bookclub/borrow_form.html", {
+            "form": form,
+            "book": book
+        })
+
+
+    def post(self, request, pk):
+        book = get_object_or_404(Book, pk=pk)
+
+        if not book.available_to_borrow:
+            return redirect(book.get_absolute_url())
+
         form = BorrowForm(request.POST)
+
         if form.is_valid():
             borrow = form.save(commit=False)
             borrow.book = book
 
-            if request.user.is_authenticated and hasattr(request.user, 'profile'):
+            if request.user.is_authenticated and hasattr(request.user, "profile"):
                 borrow.borrower = request.user.profile
                 borrow.name = request.user.profile.display_name
             else:
-                borrow.name = form.cleaned_data['name']
+                borrow.name = form.cleaned_data["name"]
 
             borrow.save()
 
@@ -161,13 +184,7 @@ def borrow_book(request, pk):
 
             return redirect(book.get_absolute_url())
 
-    else:
-        if request.user.is_authenticated and hasattr(request.user, 'profile'):
-            form = BorrowForm(initial={
-                'name': request.user.profile.display_name
-            })
-            form.fields['name'].disabled = True
-        else:
-            form = BorrowForm()
-
-    return render(request, 'bookclub/borrow_form.html', {'form': form, 'book': book})
+        return render(request, "bookclub/borrow_form.html", {
+            "form": form,
+            "book": book
+        })
