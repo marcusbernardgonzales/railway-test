@@ -57,20 +57,30 @@ class Project(models.Model):
 class Favorite(models.Model):
     project = models.ForeignKey(
         Project,
-        on_delete = models.CASCADE,
+        on_delete=models.CASCADE,
         related_name = "favorites"
     )
     profile = models.ForeignKey(
         Profile,
-        on_delete = models.CASCADE,
+        on_delete=models.CASCADE,
         related_name = 'favorites'
     )
     date_favorited = models.DateField()
     project_status = models.CharField(
-        max_length = 10,
+        max_length=10,
         options = [
             ('backlog', 'Backlog'),
             ('todo', 'To-Do'),
             ('done', 'Done'),
         ]
     )
+
+
+class ProjectReview():
+    reviewer = models.ForeignKey(
+        Profile,
+        on_delete=models.CASCADE,
+        related_name = 'project_reviews'
+    )
+    comment = models.TextField()
+    image = models.ImageField(upload_to = 'images/', null=False)
