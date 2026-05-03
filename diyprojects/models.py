@@ -75,6 +75,9 @@ class Favorite(models.Model):
         ]
     )
 
+    def __str__(self):
+        return f"{self.profile} - {self.project}"
+
 
 class ProjectReview():
     reviewer = models.ForeignKey(
@@ -84,3 +87,18 @@ class ProjectReview():
     )
     comment = models.TextField()
     image = models.ImageField(upload_to = 'images/', null=False)
+
+    def __str__(self):
+        return f"{self.reviewer}: {self.comment}"
+
+
+class ProjectRating():
+    profile = models.ForeignKey(
+        Profile,
+        on_delete=models.CASCADE,
+        related_name = 'project_ratings'
+    )
+    score = models.IntegerField()
+
+    def __str__(self):
+        return f"{self.profile} rating: {self.score}/10"    
