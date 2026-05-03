@@ -1,6 +1,16 @@
 from django.db import models
 from django.urls import reverse
+from django.contrib.auth.models import User
 
+
+# Temporary
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    name = models.CharField(max_length=50)
+    short_bio = models.TextField()
+
+    def __str__(self):
+        return self.name
 
 class ProjectCategory(models.Model):
     name = models.CharField(max_length=255)
@@ -42,3 +52,25 @@ class Project(models.Model):
     
     class Meta:
         ordering = ['-created_on']
+
+
+class Favorite(models.Model):
+    project = models.ForeignKey(
+        Project,
+        on_delete = models.CASCADE,
+        related_name = "favorites"
+    )
+    profile = models.ForeignKey(
+        Profile,
+        on_delete = models.CASCADE,
+        related_name = 'favorites'
+    )
+    date_favorited = models.DateField()
+    project_status = models.CharField(
+        max_length = 10,
+        options = [
+            ('backlog', 'Backlog'),
+            ('todo', 'To-Do'),
+            ('done', 'Done'),
+        ]
+    )
