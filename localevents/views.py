@@ -1,10 +1,11 @@
 from django.views import View
 from django.views.generic import ListView, FormView
+from django.views.generic.edit import CreateView
 from django.views.generic.detail import DetailView
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 
 from .models import Event, EventSignup
-from .forms import GuestSignupForm
+from .forms import GuestSignupForm, EventForm
 
 
 class EventListView(ListView):
@@ -19,10 +20,10 @@ class EventListView(ListView):
             profile = self.request.user.profile
 
             created = Event.objects.filter(organizer=profile)
-            signed = Event.objects.filter(eventsignup__user_registrant=profile)
+            signed = Event.objects.filter(signups__user_registrant=profile)
 
             other = Event.objects.exclude(organizer=profile)
-            other = other.exclude(eventsignup__user_registrant=profile)
+            other = other.exclude(signups__user_registrant=profile)
 
             context['created_events'] = created
             context['signed_events'] = signed
@@ -36,7 +37,7 @@ class EventListView(ListView):
 
 class EventDetailView(DetailView):
     model = Event
-    
+    template_name = 'localevents/event_detail.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -58,6 +59,19 @@ class EventDetailView(DetailView):
         return context
 
 class EventSignupView(View):
+    def get(self, request, pk):
+        event = get_object_or_404(Event, pk=pk)
+
+        # logged-in users should not see form
+        if request.user.is_authenticated:
+            return redirect(event.get_absolute_url())
+
+        form = GuestSignupForm()
+        return render(request, 'localevents/signup_form.html', {
+            'form': form,
+            'event': event
+        })
+
     def post(self, request, pk):
         event = get_object_or_404(Event, pk=pk)
 
@@ -95,3 +109,27 @@ class GuestSignupFormView(FormView):
         signup.save()
 
         return redirect(event.get_absolute_url())
+    
+    
+class EventCreateView(CreateView):
+    model = Event
+    form_class = EventForm
+    template_name = 'localevents/event_form.html'
+
+    def get(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('login')
+
+        profile = self.request.user.profile
+
+        if profile.role != 'Event Organizer':
+            return redirect('localevents:event_list')
+
+        return super().get(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+
+        self.object.organizer.add(self.request.user.profile)
+
+        return response

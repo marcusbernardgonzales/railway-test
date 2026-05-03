@@ -36,7 +36,7 @@ class Event(models.Model):
     organizer = models.ManyToManyField(Profile, blank=True)
     event_image = models.ImageField(upload_to='events/', blank=True, null=True)
     description = models.TextField()
-    location = models.CharField()
+    location = models.CharField(max_length=255)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
     event_capacity = models.PositiveIntegerField()

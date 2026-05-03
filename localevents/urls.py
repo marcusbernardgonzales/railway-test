@@ -9,7 +9,7 @@ urlpatterns = [
     path('localevents/event/add', EventCreateView.as_view(),
          name='event_create'),
     path('localevents/event/<int:pk>/edit', EventUpdateView.as_view(),
-         name='event_edit'),
+         name='event_update'),
     path('localevents/event/<int:pk>/signup', EventSignupView.as_view(),
          name='event_signup'),
 ]
