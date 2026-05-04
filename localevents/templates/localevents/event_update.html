@@ -1,0 +1,29 @@
+{% extends 'localevents/base_event.html' %}
+
+{% block title %} Local Events | Event Update{% endblock %}
+
+{% block content %}
+    <h3>Update Event</h3>
+
+    <h4>{{ event.title }}</h4>
+    <h4>{{ event.category }}</h4>
+    <h4>{{ event.location }}</h4>
+
+    <p>From {{ event.start_time }} to {{ event.end_time }}</p>
+    <p>Capacity: {{ event.event_capacity }}</p>
+    <p>Status: {{ event.status }}</p>
+
+    <hr>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        {{ form.as_p }}
+
+        <button type="submit">Update Event</button>
+    </form>
+
+    <a href="{% url 'localevents:event_detail' event.id %}">
+        Return to event details
+    </a>
+{% endblock %}
