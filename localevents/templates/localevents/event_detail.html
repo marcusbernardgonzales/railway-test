@@ -7,7 +7,7 @@
     <h4>{{ event.category }}</h4>
     <h4>{{ event.location }}</h4>
     <p>From {{ event.start_time }} to {{ event.end_time }}</p>
-    <p>Capacity: {{ signup_count }}/{{ event.capacity }}</p>
+    <p>Capacity: {{ signup_count }}/{{ event.event_capacity }}</p>
 
     <hr>
     {% if is_owner %}

@@ -2,6 +2,7 @@ from django.views import View
 from django.views.generic import ListView, FormView
 from django.views.generic.edit import CreateView
 from django.views.generic.detail import DetailView
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404, redirect, render
 
 from .models import Event, EventSignup
@@ -100,23 +101,16 @@ class EventSignupView(View):
         return redirect(event.get_absolute_url())
     
     
-class EventCreateView(CreateView):
+class EventCreateView(LoginRequiredMixin, CreateView):
     model = Event
     form_class = EventForm
-    template_name = 'localevents/event_form.html'
-
-    def dispatch(self, request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            return redirect('login')
-
-        profile = request.user.profile
-
-        if profile.role != 'Event Organizer':
-            return redirect('localevents:event_list')
-
-        return super().dispatch(request, *args, **kwargs)
+    template_name = 'localevents/event_create.html'
 
     def form_valid(self, form):
+        if not self.request.user.groups.filter(name="Event Organizer").exists():
+            return redirect('localevents:event_list')
+
         response = super().form_valid(form)
         self.object.organizer.add(self.request.user.profile)
         return response
+    
