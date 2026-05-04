@@ -22,6 +22,15 @@ class ProjectListView(ListView):
 
 
 class ProjectDetailView(DetailView):
+    context_object_name = 'project'
     model = Project
     template_name = 'diyprojects/project_detail.html' # default value
-    
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        project = self.get_object()
+        ratings = project.ratings.all()
+
+        context['avg_rating'] = sum(rating.score for rating in ratings) / ratings.count()
+
+        return context
