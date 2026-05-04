@@ -1,5 +1,8 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.shortcuts import redirect
 from django.views.generic import ListView
 from django.views.generic.detail import DetailView
+from django.views.generic.edit import CreateView, UpdateView
 
 from .forms import ProjectRatingForm, ProjectReviewForm
 from .models import ProjectCategory, Project
@@ -48,3 +51,44 @@ class ProjectDetailView(DetailView):
             context['is_owner'] = project.creator == profile
 
         return context
+    
+    def post(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('login')
+        
+        self.object = self.get_object()
+        profile = request.user.profile
+
+        if 'score' in request.POST:
+            form = ProjectRatingForm(request.POST)
+            if form.is_valid():
+                rating = form.save(commit=False)
+                rating.project = self.object
+                rating.profile = profile
+                rating.save()
+        
+        elif 'comment' in request.POST:
+            form = ProjectReviewForm(request.POST, request.FILES)
+            if form.is_valid():
+                review = form.save(commit=False)
+                review.project = self.object
+                review.reviewer = profile
+                review.save()
+
+        return redirect('diyprojects:project_detail', pk=self.object.pk)
+
+
+class ProjectCreateView(LoginRequiredMixin, CreateView):
+    model = Project
+    fields = ['title', 'category', 'description', 'materials', 'steps']
+    template_name = 'diyprojects/project_form.html'
+
+    def form_valid(self, form):
+        form.instance.creator = self.request.user.profile
+        return super().form_valid(form)
+
+
+class ProjectUpdateView(LoginRequiredMixin, UpdateView):
+    model = Project
+    fields = ['title', 'category', 'description', 'materials', 'steps']
+    template_name = 'diyprojects/project_form.html'
