@@ -8,7 +8,53 @@
     {% for project in projects %}
     <li>
         <a href="{{ project.get_absolute_url }}">{{ project.title }}</a>
+        ({{ project.category.name|default:"Uncategorized" }})
     </li>
+    {% empty %}
+        <li>No projects available yet.</li>
     {% endfor %}
 </ul>
+{% if user.is_authenticated %}
+        <hr>
+        <div class="user-stats">
+            <h3>My Projects</h3>
+            <ul>
+                {% for p in created %}
+                <li>
+                    <a href="{{ p.get_absolute_url }}">{{ p.title }}</a>
+                </li>
+                {% empty %}
+                    <li>None yet.</li>
+                {% endfor %}
+            </ul>
+
+            <h3>My Favorites</h3>
+            <ul>
+                {% for p in favorited %}
+                <li>
+                    <a href="{{ p.get_absolute_url }}">{{ p.title }}</a>
+                </li>
+                {% empty %}
+                <li>
+                    None yet.
+                </li>
+                {% endfor %}
+            </ul>
+
+            <h3>Projects I've Reviewed</h3>
+            <ul>
+                {% for p in reviewed %}
+                <li>
+                    <a href="{{ p.get_absolute_url }}">{{ p.title }}</a>
+                </li>
+                {% empty %}
+                <li>
+                    None yet.
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        <br>
+        <a href="{% url 'diyprojects:project_add' %}">Add New Project</a>
+    {% endif %}
 {% endblock %}

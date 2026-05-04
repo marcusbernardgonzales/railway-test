@@ -4,16 +4,57 @@
 
 {% block content %}
     <h2>{{ project.title }}</h2>
-    <p>Created on: {{ project.created_on }}</p>
+    <p><strong>Category:</strong> {{ project.category.name|default:"General" }}</p>
+    <p><strong>Average Rating:</strong> {{ avg_rating|floatformat:1 }} / 10</p>
+    <p><strong>Favorites:</strong> {{ favorite_count }}</p>
+    <p>Created by: {{ project.creator.display_name }} on {{ project.created_on|date:"M d, Y" }}</p>
     <p>Updated on: {{ project.updated_on }}</p>
-    <br>
+
+    {% if is_owner %}
+        <p><a href="{% url 'diyprojects:project_update' project.pk %}">Edit this Project</a></p>
+    {% endif %}
+
+    <hr>
     <h3>Description:</h3>
     <p>{{ project.description }}</p>
+    
     <h3>Materials:</h3>
     <p>{{ project.materials|linebreaks }}</p>
+    
     <h3>Steps:</h3>
     <p>{{ project.steps|linebreaks }}</p>
-    <br>
+    
+    <hr>
+    <h3>Reviews:</h3>
+    {% for review in reviews %}
+        <div class="review">
+            <p><strong>{{ review.reviewer.display_name }}</strong> said: </p>
+            <p>{{ review.comment }}</p>
+            {% if review.image %}
+                <br><img src="{{ review.image.url }}" style="max-width: 200px;">
+            {% endif %}
+        </div>
+    {% empty %}
+        <p>No reviews yet. Be the first to review this project!</p>
+    {% endfor %}
+
+    {% if user.is_authenticated %}
+        <hr>
+        <h4>Submit a Rating</h4>
+        <form method="post">
+            {% csrf_token %}
+            {{ rating_form.as_p }}
+            <button type="submit" name="score">Submit Rating</button>
+        </form>
+
+        <h4>Submit a Review</h4>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ review_form.as_p }}
+            <button type="submit" name="comment">Submit Review</button>
+        </form>
+    {% endif %}
+
     <br>
     <p><a href="{% url 'diyprojects:project_list' %}">Return to projects</a></p>
 {% endblock %}

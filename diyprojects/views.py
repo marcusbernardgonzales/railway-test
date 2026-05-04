@@ -54,7 +54,7 @@ class ProjectDetailView(DetailView):
     
     def post(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
-            return redirect('login')
+            return redirect('/admin/login/')
         
         self.object = self.get_object()
         profile = request.user.profile

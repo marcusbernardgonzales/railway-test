@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 # Temporary
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    display_name = models.CharField(max_length=63)
+    display_name = models.CharField(max_length=63, default="New User")
     role = models.TextField(max_length=63, default="Standard User")
 
     def __str__(self):
@@ -88,12 +88,14 @@ class ProjectReview(models.Model):
     project = models.ForeignKey(
         Project, 
         on_delete=models.CASCADE, 
-        related_name='project_reviews'
+        related_name='reviews',
+        null=True, 
+        blank=True
     )
     reviewer = models.ForeignKey(
         Profile,
         on_delete=models.CASCADE,
-        related_name = 'project_reviews'
+        related_name = 'reviews'
     )
     comment = models.TextField()
     image = models.ImageField(upload_to = 'images/', null=False, blank=True)
