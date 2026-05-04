@@ -1,6 +1,7 @@
 from django.views.generic import ListView
 from django.views.generic.detail import DetailView
 
+from .forms import ProjectRatingForm, ProjectReviewForm
 from .models import ProjectCategory, Project
 
 
@@ -35,5 +36,15 @@ class ProjectDetailView(DetailView):
             context['avg_rating'] = sum(rating.score for rating in ratings) / ratings.count()
         else:
             context['avg_rating'] = 0
+        
+        context['favorite_count'] = project.favorites.count()
+        context['rating_form'] = ProjectRatingForm()
+        context['review_form'] = ProjectReviewForm()
+        context['reviews'] = project.reviews.all()
+
+        if self.request.user.is_authenticated:
+            profile = self.request.user.profile
+            context['is_favorited'] = project.favorites.filter(profile=profile).exists()
+            context['is_owner'] = project.creator == profile
 
         return context

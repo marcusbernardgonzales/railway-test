@@ -6,11 +6,11 @@ from django.contrib.auth.models import User
 # Temporary
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    name = models.CharField(max_length=50)
-    short_bio = models.TextField()
+    display_name = models.CharField(max_length=63)
+    role = models.TextField(max_length=63, default="Standard User")
 
     def __str__(self):
-        return self.name
+        return self.display_name
 
 class ProjectCategory(models.Model):
     name = models.CharField(max_length=255)
@@ -36,6 +36,11 @@ class Project(models.Model):
         related_name = 'project_list',
         null=True,
         blank=True,
+    )
+    creator = models.ForeignKey(
+        Profile, 
+        on_delete=models.SET_NULL, 
+        null=True
     )
 
     description = models.TextField()
@@ -65,13 +70,13 @@ class Favorite(models.Model):
         on_delete=models.CASCADE,
         related_name = 'favorites'
     )
-    date_favorited = models.DateField()
+    date_favorited = models.DateField(auto_now_add=True)
     project_status = models.CharField(
         max_length=10,
         choices = [
-            ('backlog', 'Backlog'),
-            ('todo', 'To-Do'),
-            ('done', 'Done'),
+            ('Backlog', 'Backlog'),
+            ('To-Do', 'To-Do'),
+            ('Done', 'Done'),
         ]
     )
 
@@ -80,6 +85,11 @@ class Favorite(models.Model):
 
 
 class ProjectReview(models.Model):
+    project = models.ForeignKey(
+        Project, 
+        on_delete=models.CASCADE, 
+        related_name='project_reviews'
+    )
     reviewer = models.ForeignKey(
         Profile,
         on_delete=models.CASCADE,
