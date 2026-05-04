@@ -68,7 +68,7 @@ class Favorite(models.Model):
     date_favorited = models.DateField()
     project_status = models.CharField(
         max_length=10,
-        options = [
+        choices = [
             ('backlog', 'Backlog'),
             ('todo', 'To-Do'),
             ('done', 'Done'),
@@ -97,6 +97,13 @@ class ProjectRating(models.Model):
         Profile,
         on_delete=models.CASCADE,
         related_name = 'project_ratings'
+    )
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.CASCADE,
+        related_name='ratings',
+        null=True,
+        blank=True,
     )
     score = models.IntegerField()
 

@@ -11,14 +11,14 @@ class ProjectListView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        profile = self.request.user.profile
 
-        context['created'] = Project.objects.filter(creator=profile)
-        context['favorited'] = Project.objects.filter(favorites__profile=profile)
-        context['reviewed'] = Project.objects.filter(reviews__reviewer=profile)
+        if self.request.user.is_authenticated:
+            profile = self.request.user.profile
+            context['created'] = Project.objects.filter(creator=profile)
+            context['favorited'] = Project.objects.filter(favorites__profile=profile)
+            context['reviewed'] = Project.objects.filter(reviews__reviewer=profile)
 
         return context
-
 
 
 class ProjectDetailView(DetailView):
@@ -31,6 +31,9 @@ class ProjectDetailView(DetailView):
         project = self.get_object()
         ratings = project.ratings.all()
 
-        context['avg_rating'] = sum(rating.score for rating in ratings) / ratings.count()
+        if ratings:
+            context['avg_rating'] = sum(rating.score for rating in ratings) / ratings.count()
+        else:
+            context['avg_rating'] = 0
 
         return context
