@@ -68,7 +68,7 @@ class EventSignup(models.Model):
         null=True,
         blank=True,
     )
-    new_registrant = models.CharField(max_length=255, blank=True)
+    new_registrant = models.CharField(max_length=255)
 
     def __str__(self):
         return self.event.title

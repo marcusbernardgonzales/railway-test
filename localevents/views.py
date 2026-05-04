@@ -58,16 +58,17 @@ class EventDetailView(DetailView):
 
         return context
 
+
 class EventSignupView(View):
+
     def get(self, request, pk):
         event = get_object_or_404(Event, pk=pk)
 
-        # logged-in users should not see form
         if request.user.is_authenticated:
             return redirect(event.get_absolute_url())
 
         form = GuestSignupForm()
-        return render(request, 'localevents/signup_form.html', {
+        return render(request, 'localevents/event_signup.html', {
             'form': form,
             'event': event
         })
@@ -77,36 +78,24 @@ class EventSignupView(View):
 
         if event.signups.count() >= event.event_capacity:
             return redirect(event.get_absolute_url())
-        
-        if self.request.user.is_authenticated:
-            profile = self.request.user.profile
+
+        if request.user.is_authenticated:
+            profile = request.user.profile
 
             if not event.organizer.filter(id=profile.id).exists():
-                EventSignup.objects.create(
+                EventSignup.objects.get_or_create(
                     event=event,
                     user_registrant=profile,
                 )
-            
+
             return redirect(event.get_absolute_url())
 
-        return redirect('localevents:guest_signup_form', pk=event.pk)
-    
-class GuestSignupFormView(FormView):
-    template_name = 'localevents/signup_form.html'
-    form_class = GuestSignupForm
+        form = GuestSignupForm(request.POST)
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        event = get_object_or_404(Event, pk=self.kwargs['pk'])
-        context['event'] = event
-        return context
-    
-    def form_valid(self, form):
-        event = get_object_or_404(Event, pk=self.kwargs['pk'])
-
-        signup = form.save(commit=False)
-        signup.event = event
-        signup.save()
+        if form.is_valid():
+            signup = form.save(commit=False)
+            signup.event = event
+            signup.save()
 
         return redirect(event.get_absolute_url())
     
@@ -116,20 +105,18 @@ class EventCreateView(CreateView):
     form_class = EventForm
     template_name = 'localevents/event_form.html'
 
-    def get(self, request, *args, **kwargs):
+    def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return redirect('login')
 
-        profile = self.request.user.profile
+        profile = request.user.profile
 
         if profile.role != 'Event Organizer':
             return redirect('localevents:event_list')
 
-        return super().get(request, *args, **kwargs)
+        return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         response = super().form_valid(form)
-
         self.object.organizer.add(self.request.user.profile)
-
         return response
