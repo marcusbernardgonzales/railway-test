@@ -60,7 +60,36 @@ class EventDetailView(DetailView):
         return context
 
 
-class EventSignupView(View):
+class BaseSignupView(View):
+
+    def post(self, request, pk):
+        event = get_object_or_404(Event, pk=pk)
+
+        if not self.check_capacity(event):
+            return redirect(self.get_redirect_url(event))
+
+        if request.user.is_authenticated:
+            if not self.check_ownership(event, request.user):
+                return redirect(self.get_redirect_url(event))
+
+        self.create_signup(event, request)
+
+        return redirect(self.get_redirect_url(event))
+
+    def check_capacity(self, event):
+        raise NotImplementedError
+
+    def check_ownership(self, event, user):
+        raise NotImplementedError
+
+    def create_signup(self, event, request):
+        raise NotImplementedError
+
+    def get_redirect_url(self, event):
+        raise NotImplementedError
+
+
+class EventSignupView(BaseSignupView):
 
     def get(self, request, pk):
         event = get_object_or_404(Event, pk=pk)
@@ -74,31 +103,29 @@ class EventSignupView(View):
             'event': event
         })
 
-    def post(self, request, pk):
-        event = get_object_or_404(Event, pk=pk)
+    def check_capacity(self, event):
+        return event.signups.count() < event.event_capacity
 
-        if event.signups.count() >= event.event_capacity:
-            return redirect(event.get_absolute_url())
+    def check_ownership(self, event, user):
+        profile = user.profile
+        return not event.organizer.filter(id=profile.id).exists()
 
+    def create_signup(self, event, request):
         if request.user.is_authenticated:
-            profile = request.user.profile
+            EventSignup.objects.get_or_create(
+                event=event,
+                user_registrant=request.user.profile,
+            )
+        else:
+            form = GuestSignupForm(request.POST)
 
-            if not event.organizer.filter(id=profile.id).exists():
-                EventSignup.objects.get_or_create(
-                    event=event,
-                    user_registrant=profile,
-                )
+            if form.is_valid():
+                signup = form.save(commit=False)
+                signup.event = event
+                signup.save()
 
-            return redirect(event.get_absolute_url())
-
-        form = GuestSignupForm(request.POST)
-
-        if form.is_valid():
-            signup = form.save(commit=False)
-            signup.event = event
-            signup.save()
-
-        return redirect(event.get_absolute_url())
+    def get_redirect_url(self, event):
+        return event.get_absolute_url()
     
     
 class EventCreateView(LoginRequiredMixin, CreateView):
