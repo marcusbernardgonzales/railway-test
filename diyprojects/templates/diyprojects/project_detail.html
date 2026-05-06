@@ -40,18 +40,32 @@
 
     {% if user.is_authenticated %}
         <hr>
-        <h4>Submit a Rating</h4>
         <form method="post">
             {% csrf_token %}
-            {{ rating_form.as_p }}
-            <button type="submit" name="score">Submit Rating</button>
+            {% if is_favorited %}
+                <button type="submit" name="action" value="unfavorite">Remove from Favorites</button>
+            {% else %}
+                <button type="submit" name="action" value="favorite">Add to Favorites</button>
+            {% endif %}
         </form>
+
+        <hr>
+        <h4>Submit a Rating</h4>
+        {% if not has_rated %}
+            <form method="post">
+                {% csrf_token %}
+                {{ rating_form.as_p }}
+                <button type="submit" name="action" value="rate">Submit Rating</button>
+            </form>
+        {% else %}
+            <p>You have already rated this project.</p>
+        {% endif %}
 
         <h4>Submit a Review</h4>
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             {{ review_form.as_p }}
-            <button type="submit" name="comment">Submit Review</button>
+            <button type="submit" name="action" value="review">Submit Review</button>
         </form>
     {% endif %}
 
