@@ -19,9 +19,14 @@ class ProjectListView(ListView):
 
         if self.request.user.is_authenticated:
             profile = self.request.user.profile
-            context['created'] = Project.objects.filter(creator=profile)
-            context['favorited'] = Project.objects.filter(favorites__profile=profile)
-            context['reviewed'] = Project.objects.filter(reviews__reviewer=profile)
+            
+            created = Project.objects.filter(creator=profile)
+            favorited = Project.objects.filter(favorites__profile=profile)
+            reviewed = Project.objects.filter(reviews__reviewer=profile)
+            
+            context['created_projects'] = created
+            context['favorited_projects'] = favorited
+            context['reviewed_projects'] = reviewed
 
         return context
 
@@ -36,17 +41,27 @@ class ProjectDetailView(DetailView):
         project = self.get_object()
         ratings = project.ratings.all()
 
-        context['avg_rating'] = ratings.aggregate(Avg('score'))['score__avg'] or 0
-        context['favorite_count'] = project.favorites.count()
+        average = ratings.aggregate(Avg('score'))['score__avg'] or 0
+        favorite_count = project.favorites.count()
+
+        reviews = project.reviews.all()
+
+        context['avg_rating'] = average
+        context['favorite_count'] = favorite_count
         context['rating_form'] = ProjectRatingForm()
         context['review_form'] = ProjectReviewForm()
-        context['reviews'] = project.reviews.all()
+        context['reviews'] = reviews
 
         if self.request.user.is_authenticated:
             profile = self.request.user.profile
-            context['has_rated'] = project.ratings.filter(profile=profile).exists()
-            context['is_favorited'] = project.favorites.filter(profile=profile).exists()
-            context['is_owner'] = project.creator == profile
+
+            has_rated = project.ratings.filter(profile=profile).exists()
+            is_favorited = project.favorites.filter(profile=profile).exists()
+            is_owner = project.creator == profile
+
+            context['has_rated'] = has_rated
+            context['is_favorited'] = is_favorited
+            context['is_owner'] = is_owner
         else:
             context['has_rated'] = False
         return context
