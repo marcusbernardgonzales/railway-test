@@ -3,14 +3,14 @@ from django import forms
 from .models import *
 
 
-class ItemForm(forms.ModelForm):
+class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
         fields = [
             'name',
             'type',
-            'description',
             'image',
+            'description',
             'price',
             'stock',
             'status',

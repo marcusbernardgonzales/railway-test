@@ -10,8 +10,11 @@ class Profile(models.Model):
         User,
         on_delete=models.CASCADE,
     )
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=63)
     email = models.EmailField()
+
+    def __str__(self):
+        return self.name
 
 
 class ProductType(models.Model):
@@ -28,13 +31,13 @@ class ProductType(models.Model):
 
 
 class Product(models.Model):
-    AVAILABLE = "A"
-    ON_SALE = "OS"
-    OUT_OF_STOCK = "OOS"
+    AVAILABLE = 'A'
+    ON_SALE = 'OS'
+    OUT_OF_STOCK = 'OOS'
     PRODUCT_STATUS_CHOICES = {
-        AVAILABLE: "Available",
-        ON_SALE: "On Sale",
-        OUT_OF_STOCK: "Out of Stock",
+        AVAILABLE: 'Available',
+        ON_SALE: 'On Sale',
+        OUT_OF_STOCK: 'Out of Stock',
     }
 
     name = models.CharField(max_length=255)
@@ -68,9 +71,9 @@ class Product(models.Model):
 
     def save(self, *args, **kwargs):
         if self.stock == 0:
-            self.status=OUT_OF_STOCK
-        else:
-            super().save(*args, **kwargs)
+            self.status = self.OUT_OF_STOCK
+
+        super().save(*args, **kwargs)
 
     def get_absolute_url(self):
         return reverse('merchstore:item_detail', args=[int(self.pk)])
@@ -82,17 +85,17 @@ class Product(models.Model):
 
 
 class Transaction(models.Model):
-    ON_CART = "OC"
-    TO_PAY = "TP"
-    TO_SHIP = "TS"
-    TO_RECEIVE = "TR"
-    DELIVERED = "D"
+    ON_CART = 'OC'
+    TO_PAY = 'TP'
+    TO_SHIP = 'TS'
+    TO_RECEIVE = 'TR'
+    DELIVERED = 'D'
     TRANSACTION_STATUS_CHOICES = {
-        ON_CART: "On Cart",
-        TO_PAY: "To Pay",
-        TO_SHIP: "To Ship",
-        TO_RECEIVE: "To Receive",
-        DELIVERED: "Delivered",
+        ON_CART: 'On Cart',
+        TO_PAY: 'To Pay',
+        TO_SHIP: 'To Ship',
+        TO_RECEIVE: 'To Receive',
+        DELIVERED: 'Delivered',
     }
 
     buyer = models.ForeignKey(

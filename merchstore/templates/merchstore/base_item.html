@@ -1,3 +1,16 @@
 {% extends 'base.html' %}
 
-{% block header %}Merch Store{% endblock %}
+{% block header %}
+    <h2>Merch Store</h2>
+    <a href="{% url 'merchstore:cart' %}">Your Cart</a>
+    |
+    <a href="{% url 'merchstore:transaction_list' %}">
+        Your Transactions
+    </a>
+    |
+    {% if user.is_authenticated %}
+        <a href="">Logout</a>
+    {% else %}
+        <a href="">Login</a>
+    {% endif %}
+{% endblock %}

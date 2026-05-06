@@ -5,15 +5,21 @@
 {% block content %}
     <h3>Your Cart</h3>
     <ul>
-        {% for transaction in transactions %}
-            {% if transaction.buyer == user %}
-                <li>
-                    {{ transaction.product.name }}
-                </li>
-            {% endif %}
+        {% for product in purchased_products %}
+            <li>
+                {{ product.product.name }}
+                <br>
+                {{ product.get_status_display }}
+                <br>
+                {{ product.amount }}x
+                <br>
+                <br>
+            </li>
+            {% empty %}
+                <li>No products in cart found</li>
         {% endfor %}
     </ul>
     <br>
     <br>
-    <a href="{% url 'merchstore:item_list' %}">Return to item list</a>
+    <a href="{% url 'merchstore:item_list' %}">Return to product list</a>
 {% endblock %}

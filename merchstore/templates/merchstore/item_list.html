@@ -6,48 +6,52 @@
     <h3>Item List</h3>
     {% if user.is_authenticated %}
         <p>Your Products</p>
-        {% for product in products %}
-            {% if product.owner == user %}
-                <li>
-                    <a href="{{ product.get_absolute_url }}">
-                        <b>
-                            {{ product.name }} | ₱{{ product.price }}
-                        </b>
-                    </a>
-                    <br>
-                    <br>
-                    {{ product.type }}
-                    <br>
-                    Sold by: {{ product.owner }}
-                    <br>
-                    {{ product.get_status_display }}
-                </li>
-            {% endif %}
+        <ul>
+        {% for product in owned_products %}
+            <li>
+                <a href="{{ product.get_absolute_url }}">
+                    <b>
+                        {{ product.name }} | ₱{{ product.price }}
+                    </b>
+                </a>
+                <br>
+                {{ product.type }}
+                <br>
+                Sold by: {{ product.owner }}
+                <br>
+                {{ product.get_status_display }}
+                <br>
+                <br>
+            </li>
+            {% empty %} 
+                <li>No products found</li>
         {% endfor %}
+        </ul>
         <br>
     {% endif %}
     <p>All Products</p>
     <ul>
-        {% for product in products %}
-            {% if product.owner != user %}
-                <li>
-                    <a href="{{ product.get_absolute_url }}">
-                        <b>
-                            {{ product.name }} | ₱{{ product.price }}
-                        </b>
-                    </a>
-                    <br>
-                    <br>
-                    {{ product.type }}
-                    <br>
-                    Sold by: {{ product.owner }}
-                    <br>
-                    {{ product.get_status_display }}
-                </li>
-            {% endif %}
+        {% for product in all_products %}
+            <li>
+                <a href="{{ product.get_absolute_url }}">
+                    <b>
+                        {{ product.name }} | ₱{{ product.price }}
+                    </b>
+                </a>
+                <br>
+                {{ product.type }}
+                <br>
+                Sold by: {{ product.owner }}
+                <br>
+                {{ product.get_status_display }}
+                <br>
+                <br>
+            </li>
+            {% empty %} 
+                <p>No products found</p>
         {% endfor %}
     </ul>
     <br>
     <br>
-    <a href="{% url 'merchstore:item_create' %}">Create a product</a>
+    <a href="{% url 'merchstore:item_create' %}">List a product</a>
 {% endblock %}

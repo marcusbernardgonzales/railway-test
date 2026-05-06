@@ -4,21 +4,31 @@
 
 {% block content %}
     <h3>{{ product.name }}</h3>
-    <h4>{{ product.type }}</h4>
-    <h4>₱{{ product.price }}</h4>
-    <b>{{ product.stock }} Left | {{ product.get_status_display }}</b>
-    <br>
+    <p>{{ product.type }}</p>
+    <p>₱{{ product.price }}</p>
+    <p>Sold by {{ product.owner }}</p>
+    <p>{{ product.stock }} Left | {{ product.get_status_display }}</p>
     <br>
     <p>{{ product.description }}</p>
     <br>
-    {% if product.owner != user %}
-        <form method="POST">
+    {% if not is_owner %}
+        <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
             {{ form.as_p }}
-            <input type="submit" value="Purchase item">
+            {% if has_stock %}
+                <button type="submit">Buy product</button>
+            {% else %}
+                <button type="submit" disabled>Buy product</button>
+            {% endif %}
         </form>
     {% endif %}
     <br>
     <br>
-    <a href="{% url 'merchstore:item_list' %}">Return to item list</a>
+    {% if is_owner %}
+        <a href="{% url 'merchstore:item_update' product.pk %}">Edit product</a>
+        <br>
+    {% endif %}
+    <br>
+    <br>
+    <a href="{% url 'merchstore:item_list' %}">Return to product list</a>
 {% endblock %}
