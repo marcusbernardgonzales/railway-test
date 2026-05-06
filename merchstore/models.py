@@ -36,7 +36,7 @@ class Product(models.Model):
         ON_SALE: "On Sale",
         OUT_OF_STOCK: "Out of Stock",
     }
-    
+
     name = models.CharField(max_length=255)
     type = models.ForeignKey(
         ProductType,
@@ -46,20 +46,17 @@ class Product(models.Model):
     )
     owner = models.ForeignKey(
         Profile,
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
         related_name='products',
         null=True,
     )
-    description = models.TextField()
     image = models.ImageField(blank=True)
+    description = models.TextField()
     price = models.DecimalField(
         max_digits=8,
         decimal_places=2,
     )
-    stock = models.IntegerField(
-        validators=[MinValueValidator(0)],
-        default=1,
-    )
+    stock = models.IntegerField(validators=[MinValueValidator(0)])
     status = models.CharField(
         max_length=3,
         choices=PRODUCT_STATUS_CHOICES,
@@ -68,6 +65,12 @@ class Product(models.Model):
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        if self.stock == 0:
+            self.status=OUT_OF_STOCK
+        else:
+            super().save(*args, **kwargs)
 
     def get_absolute_url(self):
         return reverse('merchstore:item_detail', args=[int(self.pk)])
@@ -111,9 +114,6 @@ class Transaction(models.Model):
         default=ON_CART,
     )
     created_on = models.DateTimeField(auto_now_add=True)
-
-    def get_absolute_url(self):
-        return reverse('merchstore:cart')
 
     class Meta:
         verbose_name = 'transaction'
