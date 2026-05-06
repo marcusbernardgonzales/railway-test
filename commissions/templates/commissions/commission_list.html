@@ -3,14 +3,20 @@
 {% block title %}Commissions | Commission List{% endblock %}
 
 {% block content %}
-    <h3>Commission List</h3>
-    <ul>
-      {% for commission in commissions %}
-        <li>
-          <a href="{{ commission.get_absolute_url }}">
-            {{ commission.title }}
-          </a>
-        </li>
-      {% endfor %}
-    </ul>
+    <h3>Your Created Commissions</h3>
+    {% for c in created %}
+        <p><a href="{{ c.get_absolute_url }}">{{ c.title }}</a></p>
+    {% endfor %}
+
+    <h3>Your Applications</h3>
+    {% for c in applied %}
+        <p><a href="{{ c.get_absolute_url }}">{{ c.title }}</a></p>
+    {% endfor %}
+
+    <h3>All Commissions</h3>
+    {% for c in commissions %}
+        <p><a href="{{ c.get_absolute_url }}">{{ c.title }}</a></p>
+    {% endfor %}
+
+<a href="{% url 'commissions:commission_add' %}">Create Commission</a>
 {% endblock %}
