@@ -5,8 +5,8 @@ from django.views.generic.detail import DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404, redirect, render
 
-from .models import Event, EventSignup
-from .forms import GuestSignupForm, EventForm
+from .forms import *
+from .models import *
 
 
 class EventListView(ListView):
@@ -19,10 +19,8 @@ class EventListView(ListView):
 
         if self.request.user.is_authenticated:
             profile = self.request.user.profile
-
             created = Event.objects.filter(organizer=profile)
             signed = Event.objects.filter(signups__user_registrant=profile)
-
             other = Event.objects.exclude(organizer=profile)
             other = other.exclude(signups__user_registrant=profile)
 
@@ -42,7 +40,7 @@ class EventDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        event = self.object
+        event = self.get_object()
 
         signup_count = event.signups.count()
         is_full = signup_count >= event.event_capacity
@@ -118,7 +116,6 @@ class EventSignupView(BaseSignupView):
             )
         else:
             form = GuestSignupForm(request.POST)
-
             if form.is_valid():
                 signup = form.save(commit=False)
                 signup.event = event
@@ -126,9 +123,9 @@ class EventSignupView(BaseSignupView):
 
     def get_redirect_url(self, event):
         return event.get_absolute_url()
-    
-    
-class EventCreateView(LoginRequiredMixin, CreateView):
+
+
+class EventCreateView(CreateView, LoginRequiredMixin):
     model = Event
     form_class = EventForm
     template_name = 'localevents/event_create.html'
@@ -137,12 +134,12 @@ class EventCreateView(LoginRequiredMixin, CreateView):
         if not self.request.user.groups.filter(name="Event Organizer").exists():
             return redirect('localevents:event_list')
 
-        response = super().form_valid(form)
         self.object.organizer.add(self.request.user.profile)
-        return response
+        
+        return super().form_valid(form)
 
 
-class EventUpdateView(LoginRequiredMixin, UpdateView):
+class EventUpdateView(UpdateView, LoginRequiredMixin):
     model = Event
     form_class = EventForm
     template_name = 'localevents/event_update.html'
@@ -156,7 +153,6 @@ class EventUpdateView(LoginRequiredMixin, UpdateView):
             return redirect('localevents:event_list')
 
         event = self.get_object()
-
         if not event.organizer.filter(id=request.user.profile.id).exists():
             return redirect('localevents:event_detail', pk=event.pk)
 
@@ -171,8 +167,6 @@ class EventUpdateView(LoginRequiredMixin, UpdateView):
         if not event.organizer.filter(id=self.request.user.profile.id).exists():
             return redirect('localevents:event_detail', pk=event.pk)
 
-        response = super().form_valid(form)
-
         if self.object.signups.count() >= self.object.event_capacity:
             self.object.status = "Full"
         else:
@@ -180,4 +174,4 @@ class EventUpdateView(LoginRequiredMixin, UpdateView):
 
         self.object.save()
 
-        return response
+        return super().form_valid(form)
