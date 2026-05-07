@@ -91,7 +91,7 @@ os.environ.setdefault("PGDATABASE", "liftoff_dev")
 os.environ.setdefault("PGUSER", "username")
 os.environ.setdefault("PGPASSWORD", "")
 os.environ.setdefault("PGHOST", "localhost")
-os.environ.setdefault("PGPORT", "8000")
+os.environ.setdefault("PGPORT", "5432")
 
 DATABASES = {
     "default": dj_database_url.config(default=os.environ.get("DATABASE_URL"))
