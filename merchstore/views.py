@@ -1,5 +1,6 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect, render
+from django.urls import reverse_lazy
 from django.views.generic import ListView
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import CreateView, UpdateView
@@ -33,7 +34,6 @@ class ProductDetailView(DetailView, CreateView):
     model = Product
     form_class = TransactionForm
     template_name = 'merchstore/item_detail.html'
-    success_url = '/merchstore/cart'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -47,12 +47,44 @@ class ProductDetailView(DetailView, CreateView):
 
         context['is_owner'] = is_owner
         context['has_stock'] = has_stock
+        context['product'] = product
 
         return context
+    
+    def get_success_url(self):
+        return reverse_lazy('merchstore:cart')
 
     def form_valid(self, form):
-        form.instance.buyer = Profile.objects.get(user=self.request.user)
-        form.instance.product = self.get_object()
+        product = self.get_object()
+        amount = form.cleaned_data.get('amount')
+
+        if self.request.user.is_authenticated:
+            profile = Profile.objects.get(user=self.request.user)
+            form.instance.buyer = profile
+            form.instance.product = product
+
+            product.stock -= amount
+            product.save()
+
+        if amount > product.stock:
+            return self.form_invalid(form)
+
+        return super().form_valid(form)
+    
+    def form_valid(self, form):
+        product = self.get_object()
+
+        if not self.request.user.groups.filter(name='Market Seller').exists():
+            return redirect('merchstore:item_list')
+
+        if not product.owner.filter(id=self.request.user.profile.id).exists():
+            return redirect('merchstore:item_detail', pk=product.pk)
+
+        if self.object.amount == 0:
+            self.object.status = OUT_OF_STOCK
+
+        self.object.save()
+
         return super().form_valid(form)
 
 
