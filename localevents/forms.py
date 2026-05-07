@@ -1,5 +1,7 @@
 from django import forms
-from .models import Event, EventSignup
+
+from .models import *
+
 
 class GuestSignupForm(forms.ModelForm):
     class Meta:

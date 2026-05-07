@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import EventType, Event
+from .models import *
 
 
 class EventTypeAdmin(admin.ModelAdmin):
