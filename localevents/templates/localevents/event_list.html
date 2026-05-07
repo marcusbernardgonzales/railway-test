@@ -4,14 +4,50 @@
 
 {% block content %}
     <h3>Event List</h3>
+    <a href="{% url 'localevents:event_create' %}">Create Event</a>
+
+    {% if user.is_authenticated %}
+        <h4>Created Events</h4>
+        <ul>
+            {% for event in created_events %}
+                <li>
+                    <a href="{{ event.get_absolute_url }}">
+                        {{ event.title }} - {{ event.location }},
+                        {{ event.start_time|date:'M d, Y' }}
+                    </a>
+                </li>
+            {% empty %}
+                <li>No created events found.</li>
+            {% endfor %}
+        </ul>
+
+        <h4>Signed Events</h4>
+        <ul>
+            {% for event in signed_events %}
+                <li>
+                    <a href="{{ event.get_absolute_url }}">
+                        {{ event.title }} - {{ event.location }},
+                        {{ event.start_time|date:'M d, Y' }}
+                    </a>
+                </li>
+            {% empty %}
+                <li>No signed events found.</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <h4>Created Events</h4>
     <ul>
-        {% for event in events %}
+        {% for event in all_events %}
             <li>
                 <a href="{{ event.get_absolute_url }}">
                     {{ event.title }} - {{ event.location }},
                     {{ event.start_time|date:'M d, Y' }}
                 </a>
             </li>
+        {% empty %}
+            <li>No events found.</li>
         {% endfor %}
     </ul>
+
 {% endblock %}
