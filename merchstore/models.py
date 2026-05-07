@@ -3,18 +3,7 @@ from django.core.validators import MinValueValidator
 from django.db import models
 from django.urls import reverse
 
-
-# Temporary model
-class Profile(models.Model):
-    user = models.OneToOneField(
-        User,
-        on_delete=models.CASCADE,
-    )
-    name = models.CharField(max_length=63)
-    email = models.EmailField()
-
-    def __str__(self):
-        return self.name
+from accounts.models import Profile
 
 
 class ProductType(models.Model):
