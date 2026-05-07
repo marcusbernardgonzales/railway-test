@@ -1,1 +1,1 @@
-web: gunicorn commongrounds.wsgi --bind 0.0.0.0:$PORT
+web: gunicorn commongrounds.wsgi:application --bind 0.0.0.0:$PORT
