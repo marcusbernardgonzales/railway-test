@@ -4,6 +4,45 @@
 
 {% block content %}
     <h3>Book List</h3>
+
+    {% if user.is_authenticated %}
+
+        {% if contributed % }
+            <h4>Books You Contributed</h4>
+            <ul>
+              {% for book in contributed %}
+                <li>
+                  <a href="{{ book.get_absolute_url }}">{{ book.title }}</a>
+                </li>
+              {% endfor %}
+            </ul>
+        {% endif %}
+
+        {% if bookmarked %}
+            <h4>Books You Bookmarked</h4>
+            <ul>
+              {% for book in bookmarked %}
+                <li>
+                  <a href="{{ book.get_absolute_url }}">{{ book.title }}</a>
+                </li>
+              {% endfor %}
+            </ul>
+        {% endif %}
+
+        {% if reviewed %}
+            <h4>Books You Reviewed</h4>
+            <ul>
+              {% for book in reviewed %}
+                <li>
+                  <a href="{{ book.get_absolute_url }}">{{ book.title }}</a>
+                </li>
+              {% endfor %}
+            </ul>
+        {% endif %}
+    
+    {% endif %}
+
+    <h4>All Books</h4>
     <ul>
       {% for book in books %}
         <li>
@@ -11,6 +50,13 @@
             {{ book.title }} ({{ book.publication_year }})
           </a>
         </li>
+      {% empty %}
+        <li>No books found.</li>
       {% endfor %}
     </ul>
+
+    {% if user.is_authenticated %}
+        <a href="{% url 'bookclub:add_book' %}">Add New Book</a>
+    {% endif %}
+
 {% endblock %}
