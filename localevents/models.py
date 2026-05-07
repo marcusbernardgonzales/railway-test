@@ -18,11 +18,15 @@ class EventType(models.Model):
 
 
 class Event(models.Model):
+    AVAILABLE = 'A'
+    FULL = 'F'
+    DONE = 'D'
+    CANCELLED = 'C'
     STATUS_CHOICES = {
-        "Available": "Available",
-        "Full": "Full",
-        "Done": "Done",
-        "Cancelled": "Cancelled",
+        AVAILABLE: 'Available',
+        FULL: 'Full',
+        DONE: 'Done',
+        CANCELLED: 'Cancelled',
     }
 
     title = models.CharField(max_length=255)
@@ -33,14 +37,24 @@ class Event(models.Model):
         null=True,
         blank=True,
     )
-    organizer = models.ManyToManyField(Profile, blank=True)
-    event_image = models.ImageField(upload_to='events/', blank=True, null=True)
+    organizer = models.ManyToManyField(
+        Profile,
+        blank=True,
+    )
+    event_image = models.ImageField(
+        upload_to='events/',
+        null=True,
+        blank=True,
+    )
     description = models.TextField()
     location = models.CharField(max_length=255)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
     event_capacity = models.PositiveIntegerField()
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES)
+    status = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES,
+    )
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
 
