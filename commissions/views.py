@@ -13,8 +13,10 @@ def is_commission_maker(user):
     return (
         user.is_authenticated and
         hasattr(user, "profile") and
+        (
         user.groups.filter(name="Commission Maker").exists()
         or user.is_superuser
+        )
     )
 
 
@@ -33,26 +35,6 @@ class CommissionListView(ListView):
                 output_field=IntegerField(),
             )
         ).order_by('status_order', '-created_on')
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        if self.request.user.is_authenticated and hasattr(self.request.user, "profile"):
-            profile = self.request.user.profile
-
-            created = Commission.objects.filter(maker=profile)
-            applied = Commission.objects.filter(
-                jobs__applications__applicant=profile
-            ).distinct()
-
-            context['created'] = created
-            context['applied'] = applied
-
-            context['commissions'] = context['commissions'].exclude(
-                id__in=created.union(applied)
-            )
-
-        return context
 
 
 class CommissionDetailView(DetailView):
@@ -76,17 +58,78 @@ class CommissionDetailView(DetailView):
         context['total_manpower'] = total_required
         context['open_manpower'] = total_required - accepted
 
+        context['is_owner'] = (
+            self.request.user.is_authenticated and
+            hasattr(self.request.user, "profile") and
+            commission.maker == self.request.user.profile
+        )
+
         return context
 
 
-class ApplyToJobView(LoginRequiredMixin, View):
+    def get_context_data(self, **kwargs):
+            context = super().get_context_data(**kwargs)
+
+            if self.request.user.is_authenticated and hasattr(self.request.user, "profile"):
+                profile = self.request.user.profile
+
+                created = Commission.objects.filter(maker=profile)
+                applied = Commission.objects.filter(
+                    jobs__applications__applicant=profile
+                ).distinct()
+
+                context['created'] = created
+                context['applied'] = applied
+
+                context['commissions'] = context['commissions'].exclude(
+                    id__in=created.union(applied)
+                )
+
+            return context
+
+
+class BaseJobActionView(View):
     def post(self, request, pk):
         job = get_object_or_404(Job, pk=pk)
 
+        if not self.check_capacity(job):
+            return redirect(self.get_redirect_url(job))
+
+        if request.user.is_authenticated:
+            if not self.check_permission(job, request.user):
+                return redirect(self.get_redirect_url(job))
+
+        self.perform_action(job, request)
+
+        return redirect(self.get_redirect_url(job))
+
+    def check_capacity(self, job):
+        raise NotImplementedError
+
+    def check_permission(self, job, user):
+        raise NotImplementedError
+
+    def perform_action(self, job, request):
+        raise NotImplementedError
+
+    def get_redirect_url(self, job):
+        return job.commission.get_absolute_url()
+
+class ApplyToJobView(BaseJobActionView):
+    def check_capacity(self, job):
+        accepted = job.applications.filter(status='Accepted').count()
+        return accepted < job.manpower_required
+
+    def check_permission(self, job, user):
+        if not hasattr(user, "profile"):
+            return False
+
+        # prevent duplicate applications
+        return not job.applications.filter(applicant=user.profile).exists()
+
+    def perform_action(self, job, request):
         if hasattr(request.user, "profile"):
             CommissionService.apply_to_job(job, request.user.profile)
-
-        return redirect(job.commission.get_absolute_url())
 
 
 class CommissionCreateView(LoginRequiredMixin, CreateView):
@@ -101,11 +144,7 @@ class CommissionCreateView(LoginRequiredMixin, CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
-        if self.request.POST:
-            context['formset'] = JobFormSet(self.request.POST)
-        else:
-            context['formset'] = JobFormSet()
+        context['formset'] = JobFormSet(self.request.POST or None)
 
         return context
 
@@ -113,14 +152,18 @@ class CommissionCreateView(LoginRequiredMixin, CreateView):
         context = self.get_context_data()
         formset = context['formset']
 
+        if not hasattr(self.request.user, "profile"):
+            return redirect('/')
+
         form.instance.maker = self.request.user.profile
 
         if formset.is_valid():
             self.object = form.save()
             formset.instance = self.object
             formset.save()
+            return redirect(self.object.get_absolute_url())
 
-        return redirect(self.object.get_absolute_url())
+        return self.form_invalid(form)
 
 
 class CommissionUpdateView(LoginRequiredMixin, UpdateView):
@@ -131,16 +174,20 @@ class CommissionUpdateView(LoginRequiredMixin, UpdateView):
     def dispatch(self, request, *args, **kwargs):
         if not is_commission_maker(request.user):
             return redirect('/')
+        
+        obj = self.get_object()
+
+        if not hasattr(request.user, 'profile'):
+            return redirect('/')
+        
+        if obj.maker != request.user.profile:
+            return redirect(obj.get_absolute_url())
+        
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
-        if self.request.POST:
-            context['formset'] = JobFormSet(self.request.POST, instance=self.object)
-        else:
-            context['formset'] = JobFormSet(instance=self.object)
-
+        context['formset'] = JobFormSet(self.request.POST or None, instance=self.object)
         return context
 
     def form_valid(self, form):
@@ -153,4 +200,6 @@ class CommissionUpdateView(LoginRequiredMixin, UpdateView):
 
             CommissionService.update_commission_status(self.object)
 
-        return redirect(self.object.get_absolute_url())
+            return redirect(self.object.get_absolute_url())
+
+        return self.form_invalid(form)
