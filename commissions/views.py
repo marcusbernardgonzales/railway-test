@@ -12,9 +12,9 @@ from .services import CommissionService
 def is_commission_maker(user):
     return (
         user.is_authenticated and
-        hasattr(user, "profile") and
+        hasattr(user, 'profile') and
         (
-        user.groups.filter(name="Commission Maker").exists()
+        user.groups.filter(name='Commission Maker').exists()
         or user.is_superuser
         )
     )
@@ -60,7 +60,7 @@ class CommissionDetailView(DetailView):
 
         context['is_owner'] = (
             self.request.user.is_authenticated and
-            hasattr(self.request.user, "profile") and
+            hasattr(self.request.user, 'profile') and
             commission.maker == self.request.user.profile
         )
 
@@ -70,7 +70,7 @@ class CommissionDetailView(DetailView):
     def get_context_data(self, **kwargs):
             context = super().get_context_data(**kwargs)
 
-            if self.request.user.is_authenticated and hasattr(self.request.user, "profile"):
+            if self.request.user.is_authenticated and hasattr(self.request.user, 'profile'):
                 profile = self.request.user.profile
 
                 created = Commission.objects.filter(maker=profile)
@@ -121,14 +121,14 @@ class ApplyToJobView(BaseJobActionView):
         return accepted < job.manpower_required
 
     def check_permission(self, job, user):
-        if not hasattr(user, "profile"):
+        if not hasattr(user, 'profile'):
             return False
 
         # prevent duplicate applications
         return not job.applications.filter(applicant=user.profile).exists()
 
     def perform_action(self, job, request):
-        if hasattr(request.user, "profile"):
+        if hasattr(request.user, 'profile'):
             CommissionService.apply_to_job(job, request.user.profile)
 
 
@@ -152,7 +152,7 @@ class CommissionCreateView(LoginRequiredMixin, CreateView):
         context = self.get_context_data()
         formset = context['formset']
 
-        if not hasattr(self.request.user, "profile"):
+        if not hasattr(self.request.user, 'profile'):
             return redirect('/')
 
         form.instance.maker = self.request.user.profile
