@@ -50,7 +50,7 @@ class Event(models.Model):
     location = models.CharField(max_length=255)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
-    event_capacity = models.PositiveIntegerField()
+    event_capacity = models.PositiveIntegerField(default=100)
     status = models.CharField(
         max_length=10,
         choices=STATUS_CHOICES,
