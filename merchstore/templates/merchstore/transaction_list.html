@@ -1,0 +1,25 @@
+{% extends 'merchstore/base_item.html' %}
+
+{% block title %}Merch Store | Transaction List{% endblock %}
+
+{% block content %}
+    <h3>Your Transactions</h3>
+    <ul>
+        {% for product in owned_products %}
+            <li>
+                {{ product.product.name }}
+                <br>
+                {{ product.status }}
+                <br>
+                {{ product.amount }}
+                <br>
+                <br>
+            </li>
+            {% empty %}
+                <li>No transactions found</li>
+        {% endfor %}
+    </ul>
+    <br>
+    <br>
+    <a href="{% url 'merchstore:item_list' %}">Return to product list</a>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends 'merchstore/base_item.html' %}
+
+{% block title %}Merch Store | Your Cart{% endblock %}
+
+{% block content %}
+    <h3>Your Cart</h3>
+    <ul>
+        {% for product in purchased_products %}
+            <li>
+                {{ product.product.name }}
+                <br>
+                {{ product.get_status_display }}
+                <br>
+                {{ product.amount }}x
+                <br>
+                <br>
+            </li>
+            {% empty %}
+                <li>No products in cart found</li>
+        {% endfor %}
+    </ul>
+    <br>
+    <br>
+    <a href="{% url 'merchstore:item_list' %}">Return to product list</a>
+{% endblock %}
