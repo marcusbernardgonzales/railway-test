@@ -1,3 +1,14 @@
 {% extends 'base.html' %}
 
-{% block header %}DIY Projects{% endblock %}
+{% block title %} Common Grounds {% endblock %}
+
+{% block header %}
+    <h1> DIY Projects </h1>
+    {% if user.is_authenticated %}
+        <strong>Hello, {{ user.profile.display_name }}</strong>
+    {% else %}
+        | <a href="/admin/login/">Login</a>
+    {% endif %}
+{% endblock %}
+
+{% block content %} {% endblock %}

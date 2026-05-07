@@ -4,11 +4,15 @@
 
 {% block content %}
     <h3>{{ project.title }}</h3>
-    <p>
-        Created {{ project.created_on|date:'M d, Y' }},
-        updated {{ project.updated_on|date:'M d, Y' }}
-    </p>
-    <br>
+    <p><strong>Category:</strong> {{ project.category.name|default:"General" }}</p>
+    <p><strong>Average Rating:</strong> {{ avg_rating|floatformat:1 }} / 10</p>
+    <p><strong>Favorites:</strong> {{ favorite_count }}</p>
+    <p>Created by {{ project.creator.display_name }} on {{ project.created_on|date:"M d, Y" }},</p>
+    <p>updated {{ project.updated_on|date:'M d, Y' }}</p>
+    {% if is_owner %}
+        <p><a href="{% url 'diyprojects:project_update' project.pk %}">Edit this Project</a></p>
+    {% endif %}
+    <hr>
     <p>{{ project.description }}</p>
     <br>
     <h4>Materials:</h4>
@@ -16,7 +20,52 @@
     <br>
     <h4>Steps:</h4>
     <p>{{ project.steps|linebreaks }}</p>
-    <br>
+
+    <hr>
+    <h3>Reviews:</h3>
+    {% for review in reviews %}
+        <div class="review">
+            <p><strong>{{ review.reviewer.display_name }}</strong> said: </p>
+            <p>{{ review.comment }}</p>
+            {% if review.image %}
+                <br><img src="{{ review.image.url }}" style="max-width: 200px;">
+            {% endif %}
+        </div>
+    {% empty %}
+        <p>No reviews yet. Be the first to review this project!</p>
+    {% endfor %}
+
+    {% if user.is_authenticated %}
+        <hr>
+        <form method="post">
+            {% csrf_token %}
+            {% if is_favorited %}
+                <button type="submit" name="action" value="unfavorite">Remove from Favorites</button>
+            {% else %}
+                <button type="submit" name="action" value="favorite">Add to Favorites</button>
+            {% endif %}
+        </form>
+
+        <hr>
+        <h4>Submit a Rating</h4>
+        {% if not has_rated %}
+            <form method="post">
+                {% csrf_token %}
+                {{ rating_form.as_p }}
+                <button type="submit" name="action" value="rate">Submit Rating</button>
+            </form>
+        {% else %}
+            <p>You have already rated this project.</p>
+        {% endif %}
+
+        <h4>Submit a Review</h4>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ review_form.as_p }}
+            <button type="submit" name="action" value="review">Submit Review</button>
+        </form>
+    {% endif %}
+
     <br>
     <br>
     <a href="{% url 'diyprojects:project_list' %}">Return to project list</a>
